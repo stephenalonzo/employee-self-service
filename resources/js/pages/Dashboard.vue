@@ -97,7 +97,7 @@ watch(() => props.empLeave, () => {
             <div class="w-full bg-neutral-primary-soft border border-default rounded-base shadow-xs p-4">
                 <div class="flex justify-between border-light border-b pb-3">
                     <dl>
-                        <dt class="text-body">Total Leave Hours</dt>
+                        <dt class="text-body">[TEST] Total Leave Hours</dt>
                         <dd class="text-2xl font-semibold text-heading">{{empLeave.reduce((accumulator, currentItem) =>
                             accumulator + currentItem.hours, 0) }}</dd>
                     </dl>
