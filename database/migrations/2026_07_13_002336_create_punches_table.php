@@ -14,11 +14,8 @@ return new class extends Migration
         Schema::create('punches', function (Blueprint $table) {
             $table->id();
             $table->integer('emp_id');
-            $table->timestamp('time_in')->nullable();
-            $table->timestamp('lunch_out')->nullable();
-            $table->timestamp('lunch_in')->nullable();
-            $table->timestamp('time_out')->nullable();
-
+            $table->string('punch_type');
+            $table->uuid('punch_uuid');
             $table->timestamps();
         });
     }

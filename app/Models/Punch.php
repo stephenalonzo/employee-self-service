@@ -8,9 +8,7 @@ class Punch extends Model
 {
     protected $fillable = [
         'emp_id',
-        'time_in',
-        'lunch_out',
-        'lunch_in',
-        'time_out'
+        'punch_type',
+        'punch_uuid',
     ];
 }
