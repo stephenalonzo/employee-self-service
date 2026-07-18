@@ -19,6 +19,7 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('punch_type')->nullable();
+            $table->uuid('punch_uuid')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

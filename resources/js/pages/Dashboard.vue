@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, router } from '@inertiajs/vue3';
+import { Head, router, usePage } from '@inertiajs/vue3';
 import { Clock } from '@lucide/vue';
 import type ApexCharts from 'apexcharts';
 import { initFlowbite } from 'flowbite';
@@ -13,9 +13,8 @@ interface empLeave {
     name: string;
     hours: number;
 }
-
 // eslint-disable-next-line vue/no-dupe-keys
-interface punches {
+interface timesheets {
     id: number;
     emp_id: number;
     time_in: string;
@@ -26,10 +25,39 @@ interface punches {
 
 interface Props {
     empLeave?: empLeave[];
-    punches?: punches[];
+    timesheets?: timesheets[];
 }
 
-const timeIn = () => {
+const page = usePage();
+const user = computed(() => page.props.auth.user);
+
+type PunchKey = 'time_in' | 'lunch_out' | 'lunch_in' | 'time_out';
+
+const punchLabels: Record<PunchKey, string> = {
+    time_in: 'Timed In',
+    lunch_out: 'Out for Lunch',
+    lunch_in: 'In from Lunch',
+    time_out: 'Timed Out',
+};
+
+const punchButton: Record<PunchKey, string> = {
+    time_in: 'Lunch Out',
+    lunch_out: 'Lunch In',
+    lunch_in: 'Time Out',
+    time_out: 'Time In',
+};
+
+const getPunchType = computed<PunchKey>(() => {
+    return (page.props.auth.user?.punch_type as PunchKey) || 'time_out';
+});
+
+const getPunchLabel = computed(() => punchLabels[getPunchType.value]);
+
+const getPunchButton = computed(() => punchButton[getPunchType.value]);
+
+// const userId = page.props.auth.user?.id;
+
+const createPunch = () => {
     router.post(route('time-punch.store'));
 };
 
@@ -175,33 +203,32 @@ watch(
             <div
                 class="relative aspect-video min-h-full! w-full overflow-hidden rounded-xl border border-default dark:border-sidebar-border"
             >
-                <form
-                    @submit.prevent="timeIn"
-                    class="flex h-full flex-col justify-around p-4"
-                >
+                <div class="flex h-full flex-col justify-around p-4">
                     <div class="space-y-6">
                         <Clock class="size-12" />
-                        <!--                        <Input type="text" v-model="form.emp_id" />-->
-                        <!--                        <Input type="datetime-local" v-model="form.time_in" />-->
                         <div>
                             <p
                                 class="text-xs font-medium text-gray-500 uppercase"
                             >
                                 You are currently:
                             </p>
-                            <h2 class="text-2xl font-semibold">Timed Out</h2>
+                            <div v-if="user">
+                                <h2 class="text-2xl font-semibold">
+                                    {{ getPunchLabel }}
+                                </h2>
+                            </div>
                         </div>
                     </div>
                     <hr class="w-full" />
                     <div>
                         <button
-                            type="submit"
-                            class="rounded border border-2 px-4 py-2"
+                            @click="createPunch"
+                            class="rounded border px-4 py-2"
                         >
-                            Time In
+                            {{ getPunchButton }}
                         </button>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
         <div class="relative flex-1 rounded-xl">
@@ -235,26 +262,26 @@ watch(
                     <tbody>
                         <tr
                             class="border-b border-default bg-neutral-primary"
-                            v-for="punch in props.punches"
-                            :key="punch.id"
+                            v-for="time in props.timesheets"
+                            :key="time.id"
                         >
                             <th
                                 scope="row"
                                 class="px-6 py-4 font-medium whitespace-nowrap text-heading"
                             >
-                                {{ punch.emp_id }}
+                                {{ time.emp_id }}
                             </th>
                             <td class="px-6 py-4">
-                                {{ punch.time_in }}
+                                {{ time.time_in }}
                             </td>
                             <td class="px-6 py-4">
-                                {{ punch.lunch_out }}
+                                {{ time.lunch_out }}
                             </td>
                             <td class="px-6 py-4">
-                                {{ punch.lunch_in }}
+                                {{ time.lunch_in }}
                             </td>
                             <td class="px-6 py-4">
-                                {{ punch.time_out }}
+                                {{ time.time_out }}
                             </td>
                         </tr>
                     </tbody>
