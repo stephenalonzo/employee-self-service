@@ -55,6 +55,8 @@ declare module 'ziggy-js' {
     ],
     "home": [],
     "dashboard": [],
+    "time-punch": [],
+    "time-punch.store": [],
     "profile.edit": [],
     "profile.update": [],
     "profile.destroy": [],

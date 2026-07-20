@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, FolderGit2, Clock, House, ClockArrowRight, ScrollText, Scroll } from '@lucide/vue';
+import { BookOpen, FolderGit2, House, ClockArrowRight } from '@lucide/vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
-import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
 import {
     Sidebar,
@@ -13,32 +12,33 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    SidebarGroup,
+    SidebarMenuSub
 } from '@/components/ui/sidebar';
-import { dashboard, timePunch } from '@/routes';
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from './ui/collapsible';
+import { ChevronRight } from '@lucide/vue';
+import { dashboard, timeOff } from '@/routes';
 import type { NavItem } from '@/types';
+import type { InertiaLinkProps } from '@inertiajs/vue3';
 
-const mainNavItems: NavItem[] = [
+const mainNavItems = [
     {
-        title: 'Home',
+        title: "Home",
         href: dashboard(),
         icon: House,
     },
     {
-        title: 'Time Punch',
-        href: timePunch(),
-        icon: Clock,
-    },
-    {
-        title: 'Request Time-off',
-        href: timePunch(),
+        title: "Request Time-off",
         icon: ClockArrowRight,
+        defaultOpen: false,
+        items: [
+            {
+                title: "Submit a Form",
+                href: timeOff(),
+            },
+        ],
     },
-    {
-        title: 'Pay/Tax Information',
-        href: timePunch(),
-        icon: ScrollText,
-    },
-];
+]
 
 const footerNavItems: NavItem[] = [
     {
@@ -52,6 +52,16 @@ const footerNavItems: NavItem[] = [
         icon: BookOpen,
     },
 ];
+
+defineProps<{
+    mainNavItems?: Array<{
+        title: string
+        href: NonNullable<InertiaLinkProps['href']>;
+        icon?: any
+        defaultOpen?: boolean
+        items?: Array<{ title: string; href: NonNullable<InertiaLinkProps['href']>; }>
+    }>
+}>()
 </script>
 
 <template>
@@ -69,7 +79,46 @@ const footerNavItems: NavItem[] = [
         </SidebarHeader>
 
         <SidebarContent>
-            <NavMain :items="mainNavItems" />
+            <SidebarGroup>
+                <SidebarMenu>
+                    <SidebarMenuItem v-for="item in mainNavItems" :key="item.title">
+
+                        <!-- CASE A: The item has sub-items -> Render Collapsible -->
+                        <Collapsible v-if="item.items && item.items.length" :default-open="item.defaultOpen"
+                            class="group/collapsible">
+                            <CollapsibleTrigger as-child>
+                                <SidebarMenuButton>
+                                    <component :is="item.icon" v-if="item.icon" />
+                                    <span>{{ item.title }}</span>
+                                    <ChevronRight
+                                        class="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
+                                </SidebarMenuButton>
+                            </CollapsibleTrigger>
+
+                            <CollapsibleContent>
+                                <SidebarMenuSub>
+                                    <SidebarMenuItem v-for="subItem in item.items" :key="subItem.title">
+                                        <SidebarMenuButton as-child>
+                                            <Link :href="subItem.href">
+                                                <span>{{ subItem.title }}</span>
+                                            </Link>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                </SidebarMenuSub>
+                            </CollapsibleContent>
+                        </Collapsible>
+
+                        <!-- CASE B: Normal item -> Render Standard Button -->
+                        <SidebarMenuButton v-else as-child>
+                            <Link :href="item.href">
+                                <component :is="item.icon" v-if="item.icon" />
+                                <span>{{ item.title }}</span>
+                            </Link>
+                        </SidebarMenuButton>
+
+                    </SidebarMenuItem>
+                </SidebarMenu>
+            </SidebarGroup>
         </SidebarContent>
 
         <SidebarFooter>

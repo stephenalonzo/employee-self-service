@@ -1,12 +1,12 @@
 import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createApp, h } from 'vue';
+import { ZiggyVue } from 'ziggy-js'; // <-- Add this import
 import { initializeTheme } from '@/composables/useAppearance';
 import AppLayout from '@/layouts/AppLayout.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { initializeFlashToast } from '@/lib/flashToast';
-import { ZiggyVue } from '../../vendor/tightenco/ziggy'; // <-- Add this import
 
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
@@ -16,7 +16,7 @@ createInertiaApp({
     resolve: (name) => {
         return resolvePageComponent(
             `./Pages/${name}.vue`,
-            import.meta.glob('./Pages/**/*.vue'),
+            import.meta.glob('./Pages/**/*.vue') as Record<string, any>,
         );
     },
     setup({ el, App, props, plugin }) {

@@ -5,7 +5,7 @@ import type ApexCharts from 'apexcharts';
 import { initFlowbite } from 'flowbite';
 import { ref, onMounted, computed, watch } from 'vue';
 import { dashboard } from '@/routes';
-import { route } from '../../../vendor/tightenco/ziggy/src/js';
+import { route } from 'ziggy-js';
 
 // eslint-disable-next-line vue/no-dupe-keys
 interface empLeave {
@@ -13,6 +13,7 @@ interface empLeave {
     name: string;
     hours: number;
 }
+
 // eslint-disable-next-line vue/no-dupe-keys
 interface timesheets {
     id: number;
@@ -28,8 +29,27 @@ interface Props {
     timesheets?: timesheets[];
 }
 
+const props = defineProps<Props>();
+
 const page = usePage();
 const user = computed(() => page.props.auth.user);
+
+const empLeaveData = computed<empLeave[]>(() => {
+    if (props.empLeave) return props.empLeave;
+
+    const user = page.props.auth?.user as any;
+    return [
+        { id: 1, name: 'Annual Leave', hours: user?.annual_leave ?? 0 },
+        { id: 2, name: 'Sick Leave', hours: user?.sick_leave ?? 0 },
+    ];
+});
+
+const totalHours = computed(() => {
+    return empLeaveData.value.reduce(
+        (accumulator, currentItem) => accumulator + Number(currentItem.hours),
+        0
+    );
+});
 
 type PunchKey = 'time_in' | 'lunch_out' | 'lunch_in' | 'time_out';
 
@@ -61,18 +81,11 @@ const createPunch = () => {
     router.post(route('time-punch.store'));
 };
 
-const props = withDefaults(defineProps<Props>(), {
-    empLeave: () => [
-        { id: 1, name: 'Annual Leave', hours: 164 },
-        { id: 2, name: 'Sick Leave', hours: 45 },
-    ],
-});
-
 const chartRef = ref<HTMLDivElement | null>(null);
 let chart: any = null;
 
 const chartOptions = computed<ApexCharts.ApexOptions>(() => ({
-    series: props.empLeave.map((item) => ({
+    series: empLeaveData.value.map((item) => ({
         name: item.name,
         color: item.name === 'Annual Leave' ? '#007A55' : '#C70036',
         data: [item.hours],
@@ -130,7 +143,7 @@ onMounted(async () => {
 });
 
 watch(
-    () => props.empLeave,
+    () => empLeaveData.value,
     () => {
         chart?.updateOptions(chartOptions.value);
     },
@@ -152,29 +165,25 @@ watch(
                     <dl>
                         <dt class="text-body">Total Leave Hours</dt>
                         <dd class="text-2xl font-semibold text-heading">
-                            {{
-                                empLeave?.reduce(
-                                    (accumulator, currentItem) =>
-                                        accumulator + currentItem.hours,
-                                    0,
-                                )
-                            }}
+                            {{ totalHours }}
                         </dd>
                     </dl>
                 </div>
 
                 <div class="grid grid-cols-2 py-3">
-                    <dl v-for="emp in props.empLeave" :key="emp.id">
-                        <div v-if="emp.name == 'Annual Leave'">
-                            <dt class="text-body">{{ emp.name }}</dt>
+                    <dl>
+                        <div>
+                            <dt class="text-body">Annual Leave</dt>
                             <dd class="text-lg font-semibold text-fg-success">
-                                {{ emp.hours }}
+                                {{ page.props.auth.user?.annual_leave }}
                             </dd>
                         </div>
-                        <div v-else>
-                            <dt class="text-body">{{ emp.name }}</dt>
+                    </dl>
+                    <dl>
+                        <div>
+                            <dt class="text-body">Sick Leave</dt>
                             <dd class="text-lg font-semibold text-fg-danger">
-                                {{ emp.hours }}
+                                {{ page.props.auth.user?.sick_leave }}
                             </dd>
                         </div>
                     </dl>
@@ -233,13 +242,13 @@ watch(
         </div>
         <div class="relative flex-1 rounded-xl">
             <div
-                class="relative overflow-x-auto rounded-base border border-default bg-neutral-primary-soft shadow-xs"
+                class="relative h-[550px] overflow-x-auto overflow-y-scroll rounded-base border border-default bg-neutral-primary-soft shadow-xs"
             >
                 <table
                     class="w-full text-left text-sm text-body rtl:text-right"
                 >
-                    <thead
-                        class="rounded-base border-b border-default bg-neutral-secondary-soft text-sm text-body"
+                <thead
+                class="rounded-base border-b border-default bg-neutral-secondary-soft text-sm text-body"
                     >
                         <tr>
                             <th scope="col" class="px-6 py-3 font-medium">
