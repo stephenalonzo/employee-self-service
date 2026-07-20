@@ -42,6 +42,8 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
                 'emp_id' => $request->user()?->emp_id,
                 'punch_type' => $request->user()?->punch_type,
+                'annual_leave' => $request->user()?->annual_leave,
+                'sick_leave' => $request->user()?->sick_leave,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];

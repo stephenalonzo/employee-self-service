@@ -20,6 +20,8 @@ return new class extends Migration
             $table->string('password');
             $table->string('punch_type')->nullable();
             $table->uuid('punch_uuid')->nullable();
+            $table->string('annual_leave');
+            $table->string('sick_leave');
             $table->rememberToken();
             $table->timestamps();
         });
